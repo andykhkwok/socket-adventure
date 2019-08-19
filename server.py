@@ -80,6 +80,16 @@ class Server(object):
         """
 
         # TODO: YOUR CODE HERE
+        if room_number == 0:
+            return("Center Room")
+        elif room_number == 1:
+            return("West Room")
+        elif room_number == 2:
+            return("East Room")
+        elif room_number == 3:
+            return("North Room")
+        else:
+            return("Invalid entry!")
 
         pass
 
@@ -107,9 +117,13 @@ class Server(object):
          
         :return: None 
         """
-
+        
         # TODO: YOUR CODE HERE
-
+        received = b''
+        while b'\n' not in received:
+            received += self.client_connection.recv(16)
+        self.input_buffer = received.decode()
+        
         pass
 
     def move(self, argument):
@@ -132,8 +146,24 @@ class Server(object):
         :param argument: str
         :return: None
         """
-
         # TODO: YOUR CODE HERE
+        argument = argument.split('\n')
+        argument = argument.pop(0)
+        if self.room == 0:
+            if argument == "east":
+                self.room = 2
+            if argument == "west":
+                self.room = 1
+            if argument == "north":
+                self.room = 3
+                
+        if self.room == 1 and argument == "east":
+            self.room = 0
+        if self.room == 2 and argument == "west":
+            self.room = 0
+        if self.room == 3 and argument == "south":
+            self.room = 0    
+        self.output_buffer = self.room_description(self.room)
 
         pass
 
@@ -152,6 +182,7 @@ class Server(object):
         """
 
         # TODO: YOUR CODE HERE
+        self.output_buffer = 'You say, "{}"'.format(argument)
 
         pass
 
@@ -168,7 +199,9 @@ class Server(object):
         """
 
         # TODO: YOUR CODE HERE
-
+        self.done = True
+        self.output_buffer = "Goodbye!"
+        print('noooo')
         pass
 
     def route(self):
@@ -182,9 +215,18 @@ class Server(object):
         
         :return: None
         """
-
         # TODO: YOUR CODE HERE
-
+        statement = self.input_buffer.split(" ")
+        cmdl = statement.pop(0)
+        direction = " ".join(statement)
+        print(cmdl)
+        print(direction)
+        if cmdl == 'move':
+            self.move(direction)
+        elif cmdl == 'quit\n':
+            self.quit(None)
+        elif cmdl == 'say':
+            self.say(direction)
         pass
 
     def push_output(self):
@@ -198,6 +240,7 @@ class Server(object):
         """
 
         # TODO: YOUR CODE HERE
+        self.client_connection.sendall(b"OK --- " + self.output_buffer.encode() + b"\n")
 
         pass
 
